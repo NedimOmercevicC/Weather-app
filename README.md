@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Weather Application - First Milestone
 
 ## Project Structure
@@ -112,3 +113,7 @@ weather/
 
 
 
+=======
+# Weather-app
+Weather
+>>>>>>> 46542cd1599f909366698a8f87bd0a3b4f08e714
