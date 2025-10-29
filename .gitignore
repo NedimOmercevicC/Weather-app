@@ -1,3 +1,2 @@
-# Ignore DAO and SQL files on master
 backend/dao/
 weather_app_database.sql
