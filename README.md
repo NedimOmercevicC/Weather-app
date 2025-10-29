@@ -56,11 +56,3 @@ weather/
 - **Contact** (`#signup`) - Newsletter signup and contact info
 - **Login/Signup** - Modal-based authentication
 
-## Technical Implementation
-
-### SPA Router
-- Hash-based navigation (`#weather`, `#about`, etc.)
-- Dynamic content loading without page reloads
-- Component re-initialization after route changes
-- Event delegation for dynamic content
-
