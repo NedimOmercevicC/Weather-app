@@ -14,18 +14,13 @@ class SPARouter {
     }
 
     init() {
-        // Load common modals once
         this.loadModals();
-        
-        // Load initial content
         this.loadRoute(window.location.hash || '#home');
         
-        // Listen for hash changes
         window.addEventListener('hashchange', () => {
             this.loadRoute(window.location.hash);
         });
 
-        // Handle navigation clicks
         document.addEventListener('click', (e) => {
             if (e.target.matches('a[href^="#"]')) {
                 e.preventDefault();
@@ -88,13 +83,11 @@ class SPARouter {
     }
 
     initializeComponents() {
-        // Re-initialize weather form
         const weatherForm = document.getElementById('weatherForm');
         if (weatherForm) {
             weatherForm.addEventListener('submit', this.handleWeatherSubmit);
         }
 
-        // Re-initialize quick city buttons
         document.querySelectorAll('.quick-city').forEach(btn => {
             btn.addEventListener('click', function () {
                 const cityInput = document.getElementById('cityInput');
@@ -106,13 +99,9 @@ class SPARouter {
             });
         });
 
-        // Re-initialize subscribe buttons
         document.querySelectorAll('.subscribe-btn').forEach(btn => {
             btn.addEventListener('click', this.handleSubscribeClick);
         });
-
-        // Re-initialize auth forms
-        this.initializeAuth();
     }
 
     handleWeatherSubmit = async (e) => {
@@ -173,7 +162,7 @@ class SPARouter {
     }
 
     weatherCodeToText(code) {
-        const map = {
+        const weatherMap = {
             0: 'Clear', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
             45: 'Fog', 48: 'Depositing Rime Fog',
             51: 'Drizzle Light', 53: 'Drizzle Moderate', 55: 'Drizzle Dense',
@@ -181,7 +170,7 @@ class SPARouter {
             71: 'Snow Slight', 73: 'Snow Moderate', 75: 'Snow Heavy',
             95: 'Thunderstorm', 96: 'Thunderstorm with Hail', 99: 'Thunderstorm with Heavy Hail'
         };
-        return map[code] || 'Weather';
+        return weatherMap[code] || 'Unknown';
     }
 
     handleSubscribeClick = (e) => {
@@ -406,6 +395,3 @@ class SPARouter {
 document.addEventListener('DOMContentLoaded', () => {
     new SPARouter();
 });
-
-
-
