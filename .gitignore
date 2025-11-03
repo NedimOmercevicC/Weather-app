@@ -1,2 +1,3 @@
-backend/dao/
-weather_app_database.sql
+# milestone2: allow tracking for DAO and SQL
+!backend/dao/**
+!weather_app_database.sql
