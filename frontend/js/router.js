@@ -1,6 +1,7 @@
 // SPA Router for Weather Application
 class SPARouter {
     constructor() {
+        this.apiBaseUrl = 'backend/index.php';
         this.routes = {
             '#home': 'frontend/views/home.html',
             '#weather': 'frontend/views/weather.html',
@@ -10,12 +11,42 @@ class SPARouter {
         };
         this.currentRoute = '#home';
         this.modalsLoaded = false;
+        this.currentUser = null;
         this.init();
+    }
+
+    async apiCall(endpoint, method = 'GET', data = null) {
+        const url = `${this.apiBaseUrl}${endpoint}`;
+        const options = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        if (data) {
+            options.body = JSON.stringify(data);
+        }
+        
+        try {
+            const response = await fetch(url, options);
+            const result = await response.json();
+            
+            if (!response.ok || result.error) {
+                throw new Error(result.message || 'API request failed');
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
     }
 
     init() {
         this.loadModals();
         this.loadRoute(window.location.hash || '#home');
+        this.checkSession();
         
         window.addEventListener('hashchange', () => {
             this.loadRoute(window.location.hash);
@@ -30,6 +61,22 @@ class SPARouter {
                 }
             }
         });
+    }
+
+    async checkSession() {
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            try {
+                const result = await this.apiCall(`/api/users/${userId}`);
+                if (result.data) {
+                    this.currentUser = result.data;
+                    this.updateAuthUI();
+                }
+            } catch (error) {
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userEmail');
+            }
+        }
     }
 
     async loadModals() {
@@ -207,7 +254,7 @@ class SPARouter {
     }
 
     getSession() {
-        return localStorage.getItem('sessionEmail');
+        return this.currentUser ? this.currentUser.email : null;
     }
 
     initializeAuth() {
@@ -233,67 +280,106 @@ class SPARouter {
         }
     }
 
-    handleLogin = (e) => {
+    handleLogin = async (e) => {
         e.preventDefault();
         const email = document.getElementById('loginEmail')?.value.trim();
         const password = document.getElementById('loginPassword')?.value;
-        const users = this.readUsers();
+        const error = document.getElementById('loginError');
         
-        if (!users[email] || users[email].password !== password) {
-            const error = document.getElementById('loginError');
+        if (error) error.classList.add('d-none');
+        
+        if (!email || !password) {
             if (error) {
-                error.textContent = 'Invalid credentials.';
+                error.textContent = 'Please enter email and password.';
                 error.classList.remove('d-none');
             }
             return;
         }
         
-        localStorage.setItem('sessionEmail', email);
-        const modalEl = document.getElementById('authModal');
-        if (modalEl) {
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.hide();
+        try {
+            const result = await this.apiCall('/api/users/login', 'POST', {
+                email: email,
+                password: password
+            });
+            
+            if (result.data) {
+                this.currentUser = result.data;
+                localStorage.setItem('userId', result.data.id);
+                localStorage.setItem('userEmail', result.data.email);
+                
+                const modalEl = document.getElementById('authModal');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.hide();
+                }
+                this.updateAuthUI();
+            }
+        } catch (err) {
+            if (error) {
+                error.textContent = err.message || 'Invalid credentials.';
+                error.classList.remove('d-none');
+            }
         }
-        this.updateAuthUI();
     }
 
-    handleSignup = (e) => {
+    handleSignup = async (e) => {
         e.preventDefault();
         const email = document.getElementById('signupEmail')?.value.trim();
         const password = document.getElementById('signupPassword')?.value;
+        const error = document.getElementById('signupError');
+        const success = document.getElementById('signupSuccess');
+        
+        if (error) error.classList.add('d-none');
+        if (success) success.classList.add('d-none');
         
         if (!this.validateEmail(email) || !password || password.length < 6) {
-            const error = document.getElementById('signupError');
             if (error) {
-                error.textContent = 'Invalid email or password too short.';
+                error.textContent = 'Invalid email or password too short (min 6 characters).';
                 error.classList.remove('d-none');
             }
             return;
         }
         
-        const users = this.readUsers();
-        if (users[email]) {
-            const error = document.getElementById('signupError');
+        try {
+            const nameParts = email.split('@')[0].split('.');
+            const fname = nameParts[0] || 'User';
+            const lname = nameParts[1] || '';
+            
+            await this.apiCall('/api/users', 'POST', {
+                fname: fname,
+                lname: lname,
+                email: email,
+                pass: password,
+                is_admin: false
+            });
+            
+            if (success) {
+                success.textContent = 'Account created successfully! You can log in now.';
+                success.classList.remove('d-none');
+            }
+            
+            document.getElementById('signupEmail').value = '';
+            document.getElementById('signupPassword').value = '';
+        } catch (err) {
             if (error) {
-                error.textContent = 'Email already registered.';
+                error.textContent = err.message || 'Failed to create account.';
                 error.classList.remove('d-none');
             }
-            return;
         }
-        
-        users[email] = { email: email, password: password };
-        this.writeUsers(users);
-        const success = document.getElementById('signupSuccess');
-        if (success) success.classList.remove('d-none');
     }
 
-    handlePayment = (e) => {
+    handlePayment = async (e) => {
         e.preventDefault();
         const fullName = document.getElementById('payerFullName')?.value.trim();
         const nameOnCard = document.getElementById('cardName')?.value.trim();
+        const planText = document.getElementById('paymentPlan')?.value || '';
+        const error = document.getElementById('paymentError');
+        const success = document.getElementById('paymentSuccess');
+        
+        if (error) error.classList.add('d-none');
+        if (success) success.classList.add('d-none');
         
         if (!fullName || !nameOnCard) {
-            const error = document.getElementById('paymentError');
             if (error) {
                 error.textContent = 'Please enter your full name and card name.';
                 error.classList.remove('d-none');
@@ -301,15 +387,60 @@ class SPARouter {
             return;
         }
         
-        setTimeout(() => {
-            const success = document.getElementById('paymentSuccess');
-            if (success) success.classList.remove('d-none');
-            const modalEl = document.getElementById('paymentModal');
-            if (modalEl) {
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                setTimeout(() => modal.hide(), 1000);
+        if (!this.currentUser || !this.currentUser.id) {
+            if (error) {
+                error.textContent = 'Please log in first.';
+                error.classList.remove('d-none');
             }
-        }, 500);
+            return;
+        }
+        
+        try {
+            const planMatch = planText.match(/(BASIC|PRO)/i);
+            const planType = planMatch ? planMatch[1].toLowerCase() : 'basic';
+            const price = planType === 'pro' ? 9.99 : 4.99;
+            
+            const endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + 1);
+            
+            const subscriptionResult = await this.apiCall('/api/subscriptions', 'POST', {
+                user_id: this.currentUser.id,
+                lasts_until: endDate.toISOString().slice(0, 19).replace('T', ' ')
+            });
+            
+            if (subscriptionResult.data) {
+                const subscriptionId = typeof subscriptionResult.data === 'number' 
+                    ? subscriptionResult.data 
+                    : (subscriptionResult.data.id || subscriptionResult.data);
+                
+                await this.apiCall('/api/payments', 'POST', {
+                    subscription_id: subscriptionId,
+                    payment_method: 'credit_card',
+                    amount: price,
+                    card_number: nameOnCard.substring(0, 4) + '****',
+                    bank_transaction_id: 'TXN' + Date.now()
+                });
+                
+                if (success) {
+                    success.textContent = 'Payment successful! Subscription activated.';
+                    success.classList.remove('d-none');
+                }
+                
+                const modalEl = document.getElementById('paymentModal');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    setTimeout(() => {
+                        modal.hide();
+                        document.getElementById('paymentForm').reset();
+                    }, 2000);
+                }
+            }
+        } catch (err) {
+            if (error) {
+                error.textContent = err.message || 'Payment failed. Please try again.';
+                error.classList.remove('d-none');
+            }
+        }
     }
 
     handleSubscription = (e) => {
@@ -335,18 +466,6 @@ class SPARouter {
         } catch (_) {
             submitErrorMessage && submitErrorMessage.classList.remove('d-none');
         }
-    }
-
-    readUsers() {
-        try {
-            return JSON.parse(localStorage.getItem('users') || '{}');
-        } catch (_) {
-            return {};
-        }
-    }
-
-    writeUsers(users) {
-        localStorage.setItem('users', JSON.stringify(users));
     }
 
     validateEmail(email) {
@@ -376,8 +495,7 @@ class SPARouter {
             nav.appendChild(logoutLi);
             logoutLi.addEventListener('click', (e) => {
                 e.preventDefault();
-                localStorage.removeItem('sessionEmail');
-                this.updateAuthUI();
+                this.logout();
             });
         }
         
@@ -388,6 +506,13 @@ class SPARouter {
             badge.textContent = '';
             logoutLi.classList.add('d-none');
         }
+    }
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userEmail');
+        this.updateAuthUI();
     }
 }
 

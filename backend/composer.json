@@ -1,0 +1,18 @@
+{
+    "name": "weatherapp/backend",
+    "description": "Weather App Backend API - CRUD Operations with OpenAPI Documentation",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "mikecao/flight": "^2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
+
