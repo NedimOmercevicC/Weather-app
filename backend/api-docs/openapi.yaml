@@ -1,0 +1,682 @@
+openapi: 3.0.0
+info:
+  title: Weather App API
+  description: |
+    Complete  API for Weather Application.
+    
+    ### Milestone 3: Full CRUD Implementation for All Entities & Open API
+    
+    This API provides full CRUD (Create, Read, Update, Delete) operations for:
+    - Users (with authentication)
+    - Cities
+    - Subscriptions
+    - Payments
+    - Saved Filters
+    
+    All responses are wrapped in a consistent JSON format with error handling.
+  version: 1.0.0
+  contact:
+    name: Weather App Support
+    email: support@weatherapp.local
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost/weather/backend/index.php
+    description: Local development server
+
+tags:
+  - name: Users
+    description: User management and authentication
+  - name: Cities
+    description: City data management
+  - name: Subscriptions
+    description: Subscription management
+  - name: Payments
+    description: Payment management
+  - name: Saved Filters
+    description: Saved weather filter management
+
+paths:
+  /api/users/login:
+    post:
+      tags: [Users]
+      summary: User login
+      description: Authenticate user with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/users:
+    get:
+      tags: [Users]
+      summary: Get all users
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+    post:
+      tags: [Users]
+      summary: Create new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '201':
+          description: User created
+        '400':
+          description: Validation error
+
+  /api/users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: User not found
+    put:
+      tags: [Users]
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '200':
+          description: User updated
+    delete:
+      tags: [Users]
+      summary: Delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User deleted
+
+  /api/cities:
+    get:
+      tags: [Cities]
+      summary: Get all cities
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/City'
+    post:
+      tags: [Cities]
+      summary: Create new city
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CityInput'
+      responses:
+        '201':
+          description: City created
+
+  /api/cities/search/{term}:
+    get:
+      tags: [Cities]
+      summary: Search cities by name
+      parameters:
+        - name: term
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+
+  /api/cities/{id}:
+    get:
+      tags: [Cities]
+      summary: Get city by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: City not found
+    put:
+      tags: [Cities]
+      summary: Update city
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CityInput'
+      responses:
+        '200':
+          description: City updated
+    delete:
+      tags: [Cities]
+      summary: Delete city
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: City deleted
+
+  /api/subscriptions:
+    get:
+      tags: [Subscriptions]
+      summary: Get all subscriptions
+      responses:
+        '200':
+          description: Successful response
+    post:
+      tags: [Subscriptions]
+      summary: Create new subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionInput'
+      responses:
+        '201':
+          description: Subscription created
+
+  /api/subscriptions/{id}:
+    get:
+      tags: [Subscriptions]
+      summary: Get subscription by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+    put:
+      tags: [Subscriptions]
+      summary: Update subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionInput'
+      responses:
+        '200':
+          description: Subscription updated
+    delete:
+      tags: [Subscriptions]
+      summary: Delete subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Subscription deleted
+
+  /api/subscriptions/user/{userId}:
+    get:
+      tags: [Subscriptions]
+      summary: Get subscriptions by user ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+
+  /api/subscriptions/user/{userId}/active:
+    get:
+      tags: [Subscriptions]
+      summary: Get active subscription for user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+
+  /api/payments:
+    get:
+      tags: [Payments]
+      summary: Get all payments
+      responses:
+        '200':
+          description: Successful response
+    post:
+      tags: [Payments]
+      summary: Create new payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+      responses:
+        '201':
+          description: Payment created
+
+  /api/payments/{id}:
+    get:
+      tags: [Payments]
+      summary: Get payment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+    put:
+      tags: [Payments]
+      summary: Update payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+      responses:
+        '200':
+          description: Payment updated
+    delete:
+      tags: [Payments]
+      summary: Delete payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Payment deleted
+
+  /api/payments/subscription/{subscriptionId}:
+    get:
+      tags: [Payments]
+      summary: Get payments by subscription ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+
+  /api/payments/user/{userId}:
+    get:
+      tags: [Payments]
+      summary: Get payments by user ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+
+  /api/saved-filters:
+    get:
+      tags: [Saved Filters]
+      summary: Get all saved filters
+      responses:
+        '200':
+          description: Successful response
+    post:
+      tags: [Saved Filters]
+      summary: Create new saved filter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavedFilterInput'
+      responses:
+        '201':
+          description: Filter created
+
+  /api/saved-filters/{id}:
+    get:
+      tags: [Saved Filters]
+      summary: Get filter by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+    put:
+      tags: [Saved Filters]
+      summary: Update filter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavedFilterInput'
+      responses:
+        '200':
+          description: Filter updated
+    delete:
+      tags: [Saved Filters]
+      summary: Delete filter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Filter deleted
+
+  /api/saved-filters/user/{userId}:
+    get:
+      tags: [Saved Filters]
+      summary: Get filters by user ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        fname:
+          type: string
+        lname:
+          type: string
+        email:
+          type: string
+        is_admin:
+          type: boolean
+
+    UserInput:
+      type: object
+      required: [fname, lname, email, password]
+      properties:
+        fname:
+          type: string
+          maxLength: 50
+          example: John
+        lname:
+          type: string
+          maxLength: 50
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: nedim@example.com
+        password:
+          type: string
+          minLength: 6
+          example: password123
+        is_admin:
+          type: boolean
+          default: false
+          example: false
+
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        zip_code:
+          type: string
+        created_at:
+          type: string
+
+    CityInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        zip_code:
+          type: string
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        created_at:
+          type: string
+        lasts_until:
+          type: string
+
+    SubscriptionInput:
+      type: object
+      required: [user_id, lasts_until]
+      properties:
+        user_id:
+          type: integer
+        lasts_until:
+          type: string
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        subscription_id:
+          type: integer
+        payment_method:
+          type: string
+        amount:
+          type: number
+        card_number:
+          type: string
+        bank_transaction_id:
+          type: string
+        created_at:
+          type: string
+
+    PaymentInput:
+      type: object
+      required: [subscription_id, payment_method, amount]
+      properties:
+        subscription_id:
+          type: integer
+        payment_method:
+          type: string
+        amount:
+          type: number
+        card_number:
+          type: string
+        bank_transaction_id:
+          type: string
+
+    SavedFilter:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        city_id:
+          type: integer
+        forecast_days:
+          type: integer
+        min_temp_selected:
+          type: number
+        max_temp_selected:
+          type: number
+        avg_temp_selected:
+          type: number
+        weather_cond_selected:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    SavedFilterInput:
+      type: object
+      required: [user_id, city_id]
+      properties:
+        user_id:
+          type: integer
+        city_id:
+          type: integer
+        forecast_days:
+          type: integer
+        min_temp_selected:
+          type: number
+        max_temp_selected:
+          type: number
+        avg_temp_selected:
+          type: number
+        weather_cond_selected:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "User not found"
+
