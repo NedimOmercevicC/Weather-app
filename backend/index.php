@@ -29,12 +29,24 @@ if (!class_exists('NotFoundException')) {
 }
 
 try {
+    require_once __DIR__ . '/config.php';
+    require_once __DIR__ . '/Database.php';
+    
+    // Load middleware
+    require_once __DIR__ . '/middleware/AuthMiddleware.php';
+    require_once __DIR__ . '/middleware/AdminMiddleware.php';
+    require_once __DIR__ . '/middleware/ValidationMiddleware.php';
+    require_once __DIR__ . '/middleware/LoggingMiddleware.php';
+    
+    // Load services
     require_once __DIR__ . '/services/UserService.php';
     require_once __DIR__ . '/services/CityService.php';
     require_once __DIR__ . '/services/SubscriptionService.php';
     require_once __DIR__ . '/services/PaymentService.php';
     require_once __DIR__ . '/services/SavedFilterService.php';
+    require_once __DIR__ . '/services/AuthService.php';
 
+    // Load routes
     require_once __DIR__ . '/routes/user_routes.php';
     require_once __DIR__ . '/routes/city_routes.php';
     require_once __DIR__ . '/routes/subscription_routes.php';
