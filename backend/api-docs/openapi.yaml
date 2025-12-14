@@ -25,6 +25,9 @@ servers:
   - url: http://localhost/weather/backend
     description: Local development server
 
+security:
+  - bearerAuth: []
+
 tags:
   - name: Users
     description: User management and authentication
@@ -1084,6 +1087,201 @@ components:
           type: string
 
     ErrorResponse:
+          description: Filter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/saved-filters/user/{userId}:
+    get:
+      tags: [Saved Filters]
+      summary: Get filters by user ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SavedFilter'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        fname:
+          type: string
+        lname:
+          type: string
+        email:
+          type: string
+        is_admin:
+          type: boolean
+
+    UserInput:
+      type: object
+      required: [fname, lname, email, password]
+      properties:
+        fname:
+          type: string
+          maxLength: 50
+          example: John
+        lname:
+          type: string
+          maxLength: 50
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: nedim@example.com
+        password:
+          type: string
+          minLength: 6
+          example: password123
+        is_admin:
+          type: boolean
+          default: false
+          example: false
+
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        zip_code:
+          type: string
+        created_at:
+          type: string
+
+    CityInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        zip_code:
+          type: string
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        created_at:
+          type: string
+        lasts_until:
+          type: string
+
+    SubscriptionInput:
+      type: object
+      required: [user_id, lasts_until]
+      properties:
+        user_id:
+          type: integer
+        lasts_until:
+          type: string
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        subscription_id:
+          type: integer
+        payment_method:
+          type: string
+        amount:
+          type: number
+        card_number:
+          type: string
+        bank_transaction_id:
+          type: string
+        created_at:
+          type: string
+
+    PaymentInput:
+      type: object
+      required: [subscription_id, payment_method, amount]
+      properties:
+        subscription_id:
+          type: integer
+        payment_method:
+          type: string
+        amount:
+          type: number
+        card_number:
+          type: string
+        bank_transaction_id:
+          type: string
+
+    SavedFilter:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        city_id:
+          type: integer
+        forecast_days:
+          type: integer
+        min_temp_selected:
+          type: number
+        max_temp_selected:
+          type: number
+        avg_temp_selected:
+          type: number
+        weather_cond_selected:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    SavedFilterInput:
+      type: object
+      required: [user_id, city_id]
+      properties:
+        user_id:
+          type: integer
+        city_id:
+          type: integer
+        forecast_days:
+          type: integer
+        min_temp_selected:
+          type: number
+        max_temp_selected:
+          type: number
+        avg_temp_selected:
+          type: number
+        weather_cond_selected:
+          type: string
+
+    ErrorResponse:
       type: object
       properties:
         error:
@@ -1092,4 +1290,17 @@ components:
         message:
           type: string
           example: "User not found"
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token
+        user:
+          $ref: '#/components/schemas/User'
 
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

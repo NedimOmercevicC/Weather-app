@@ -1,0 +1,129 @@
+<section class="masthead bg-danger text-white text-center" style="padding-top: 100px; padding-bottom: 50px;">
+    <div class="container px-4 px-lg-5">
+        <h1 class="mb-4">Admin Panel</h1>
+        <p class="text-white-50">Manage all entities and users</p>
+    </div>
+</section>
+
+<section class="page-section" id="admin-content">
+    <div class="container px-4 px-lg-5">
+        <div id="adminError" class="alert alert-danger d-none" role="alert"></div>
+        <div id="adminLoading" class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div id="adminContent" class="d-none">
+            <!-- Tabs for different admin sections -->
+            <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users"
+                        type="button" role="tab">Users</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cities-tab" data-bs-toggle="tab" data-bs-target="#cities" type="button"
+                        role="tab">Cities</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="subscriptions-tab" data-bs-toggle="tab" data-bs-target="#subscriptions"
+                        type="button" role="tab">Subscriptions</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments"
+                        type="button" role="tab">Payments</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="filters-tab" data-bs-toggle="tab" data-bs-target="#filters"
+                        type="button" role="tab">Saved Filters</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="adminTabContent">
+                <!-- Users Tab -->
+                <div class="tab-pane fade show active" id="users" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">All Users</h5>
+                            <button class="btn btn-primary btn-sm"
+                                onclick="window.routerInstance?.showAddUserModal()">Add User</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="usersList">
+                                <!-- Users list will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cities Tab -->
+                <div class="tab-pane fade" id="cities" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">All Cities</h5>
+                            <button class="btn btn-primary btn-sm"
+                                onclick="window.routerInstance?.showAddCityModal()">Add City</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="citiesList">
+                                <!-- Cities list will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscriptions Tab -->
+                <div class="tab-pane fade" id="subscriptions" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">All Subscriptions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="subscriptionsList">
+                                <!-- Subscriptions list will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Tab -->
+                <div class="tab-pane fade" id="payments" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">All Payments</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="paymentsList">
+                                <!-- Payments list will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saved Filters Tab -->
+                <div class="tab-pane fade" id="filters" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">All Saved Filters</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="filtersList">
+                                <!-- Filters list will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Admin panel initialization will be handled by router.js
+    document.addEventListener('DOMContentLoaded', () => {
+        const router = window.routerInstance;
+        if (router) {
+            router.loadAdminPanel();
+        }
+    });
+</script>
