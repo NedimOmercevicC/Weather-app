@@ -1,8 +1,11 @@
 <?php
 $paymentService = new PaymentService();
 
+// Admin-only routes
 Flight::route('GET /api/payments', function() use ($paymentService) {
     try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
         $payments = $paymentService->getAllPayments();
         sendJsonResponse(['data' => $payments]);
     } catch (Exception $e) {
@@ -10,8 +13,10 @@ Flight::route('GET /api/payments', function() use ($paymentService) {
     }
 });
 
+// Authenticated users can create payments
 Flight::route('POST /api/payments', function() use ($paymentService) {
     try {
+        AuthMiddleware::authenticate();
         $data = json_decode(Flight::request()->getBody(), true);
         
         if (empty($data)) {
@@ -30,13 +35,23 @@ Flight::route('POST /api/payments', function() use ($paymentService) {
     }
 });
 
-// Specific routes MUST come before generic {id} routes
+// User-specific routes - users can see their own, admins can see any
 Flight::route('GET /api/payments/subscription/@subscriptionId', function($subscriptionId) use ($paymentService) {
     try {
+        AuthMiddleware::authenticate();
         if (!is_numeric($subscriptionId) || $subscriptionId <= 0) {
             sendJsonResponse(['error' => true, 'message' => 'Invalid subscription ID'], 400);
             return;
         }
+        // Get subscription to check ownership
+        $subscription = (new SubscriptionService())->getSubscriptionById($subscriptionId);
+        $currentUserId = AuthMiddleware::getUserId();
+        $isAdmin = AuthMiddleware::isAdmin();
+        
+        if (!$isAdmin && $subscription['user_id'] != $currentUserId) {
+            Flight::halt(403, json_encode(['error' => true, 'message' => 'Access denied']));
+        }
+        
         $payments = $paymentService->getPaymentsBySubscriptionId($subscriptionId);
         sendJsonResponse(['data' => $payments]);
     } catch (ValidationException $e) {
@@ -48,6 +63,14 @@ Flight::route('GET /api/payments/subscription/@subscriptionId', function($subscr
 
 Flight::route('GET /api/payments/user/@userId', function($userId) use ($paymentService) {
     try {
+        AuthMiddleware::authenticate();
+        $currentUserId = AuthMiddleware::getUserId();
+        $isAdmin = AuthMiddleware::isAdmin();
+        
+        if (!$isAdmin && $currentUserId != $userId) {
+            Flight::halt(403, json_encode(['error' => true, 'message' => 'Access denied']));
+        }
+        
         if (!is_numeric($userId) || $userId <= 0) {
             sendJsonResponse(['error' => true, 'message' => 'Invalid user ID'], 400);
             return;
@@ -63,7 +86,17 @@ Flight::route('GET /api/payments/user/@userId', function($userId) use ($paymentS
 
 Flight::route('GET /api/payments/@id', function($id) use ($paymentService) {
     try {
+        AuthMiddleware::authenticate();
         $payment = $paymentService->getPaymentById($id);
+        // Get subscription to check ownership
+        $subscription = (new SubscriptionService())->getSubscriptionById($payment['subscription_id']);
+        $currentUserId = AuthMiddleware::getUserId();
+        $isAdmin = AuthMiddleware::isAdmin();
+        
+        if (!$isAdmin && $subscription['user_id'] != $currentUserId) {
+            Flight::halt(403, json_encode(['error' => true, 'message' => 'Access denied']));
+        }
+        
         sendJsonResponse(['data' => $payment]);
     } catch (NotFoundException $e) {
         sendJsonResponse(['error' => true, 'message' => $e->getMessage()], 404);
@@ -74,8 +107,11 @@ Flight::route('GET /api/payments/@id', function($id) use ($paymentService) {
     }
 });
 
+// Admin-only routes
 Flight::route('PUT /api/payments/@id', function($id) use ($paymentService) {
     try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
         $data = json_decode(Flight::request()->getBody(), true);
         
         if (empty($data)) {
@@ -96,6 +132,8 @@ Flight::route('PUT /api/payments/@id', function($id) use ($paymentService) {
 
 Flight::route('DELETE /api/payments/@id', function($id) use ($paymentService) {
     try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
         $result = $paymentService->deletePayment($id);
         sendJsonResponse(['message' => 'Payment deleted successfully']);
     } catch (NotFoundException $e) {

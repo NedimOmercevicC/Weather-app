@@ -7,53 +7,376 @@
 // Scripts
 // 
 
-window.addEventListener('DOMContentLoaded', event => {
+// --- Configuration ---
+const API_BASE_URL = 'http://localhost/weather/backend/api';
 
-    // Navbar shrink function
-    var navbarShrink = function () {
-        const navbarCollapsible = document.body.querySelector('#mainNav');
-        if (!navbarCollapsible) {
+// --- State Management ---
+const AppState = {
+    user: null,
+    token: localStorage.getItem('jwt_token'),
+
+    isAuthenticated() {
+        return !!this.token;
+    },
+
+    setToken(token) {
+        this.token = token;
+        if (token) {
+            localStorage.setItem('jwt_token', token);
+        } else {
+            localStorage.removeItem('jwt_token');
+        }
+    },
+
+    logout() {
+        this.setToken(null);
+        this.user = null;
+        ViewManager.showLanding();
+        AuthUI.update();
+    }
+};
+
+// --- API Service ---
+const ApiService = {
+    async request(endpoint, method = 'GET', body = null) {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (AppState.token) {
+            headers['Authorization'] = `Bearer ${AppState.token}`;
+        }
+
+        const config = {
+            method,
+            headers
+        };
+        if (body) {
+            config.body = JSON.stringify(body);
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+            if (response.status === 401) {
+                // Token expired or invalid
+                AppState.logout();
+                throw new Error('Session expired. Please login again.');
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'API request failed');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
+    },
+
+    async login(email, password) {
+        return this.request('/users/login', 'POST', { email, password });
+    },
+
+    async register(fname, lname, email, password) {
+        return this.request('/users/register', 'POST', { fname, lname, email, password });
+    },
+
+    async getMe() {
+        return this.request('/users/me');
+    },
+
+    async getUsers() {
+        return this.request('/users');
+    }
+};
+
+// --- View Manager ---
+const ViewManager = {
+    views: {
+        landing: document.getElementById('landing-page'),
+        dashboard: document.getElementById('dashboard-page'),
+        admin: document.getElementById('admin-page')
+    },
+
+    hideAll() {
+        Object.values(this.views).forEach(el => {
+            if (el) el.classList.add('d-none');
+        });
+    },
+
+    showLanding() {
+        this.hideAll();
+        if (this.views.landing) this.views.landing.classList.remove('d-none');
+        window.location.hash = '';
+    },
+
+    async showDashboard() {
+        if (!AppState.isAuthenticated()) {
+            this.showLanding();
             return;
         }
+        this.hideAll();
+        if (this.views.dashboard) this.views.dashboard.classList.remove('d-none');
+
+        // Load Dashboard Data
+        await DashboardController.loadData();
+    },
+
+    async showAdmin() {
+        if (!AppState.isAuthenticated()) {
+            this.showLanding();
+            return;
+        }
+        // Basic check, backend will enforce security
+        if (AppState.user && !AppState.user.is_admin) {
+            alert("Access Denied: You are not an admin.");
+            this.showDashboard();
+            return;
+        }
+
+        this.hideAll();
+        if (this.views.admin) this.views.admin.classList.remove('d-none');
+
+        // Load Admin Data
+        await AdminController.loadData();
+    }
+};
+
+// --- Controllers ---
+const DashboardController = {
+    async loadData() {
+        try {
+            const user = await ApiService.getMe();
+            AppState.user = user; // Update local user state
+
+            const profileContainer = document.getElementById('userProfile');
+            if (profileContainer) {
+                profileContainer.innerHTML = `
+                    <p><strong>Name:</strong> ${user.fname} ${user.lname}</p>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>Role:</strong> ${user.is_admin ? '<span class="badge bg-danger">Admin</span>' : '<span class="badge bg-secondary">User</span>'}</p>
+                    <p><strong>Joined:</strong> ${new Date(user.created_at).toLocaleDateString()}</p>
+                `;
+            }
+
+            // Placeholder for other dashboard widgets
+            document.getElementById('activeSubscription').innerHTML = '<p class="text-muted">No active subscription found.</p>';
+            document.getElementById('paymentHistory').innerHTML = '<p class="text-muted">No payment history.</p>';
+
+        } catch (error) {
+            console.error("Failed to load dashboard:", error);
+            // Optionally show error UI
+        }
+    }
+};
+
+const AdminController = {
+    async loadData() {
+        await this.loadUsers();
+    },
+
+    async loadUsers() {
+        const listContainer = document.getElementById('usersList');
+        if (!listContainer) return;
+
+        try {
+            listContainer.innerHTML = '<div class="spinner-border spinner-border-sm"></div> Loading...';
+            const users = await ApiService.getUsers();
+
+            if (users.length === 0) {
+                listContainer.innerHTML = '<p>No users found.</p>';
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-striped"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody>';
+
+            users.forEach(u => {
+                html += `
+                    <tr>
+                        <td>${u.id}</td>
+                        <td>${u.fname} ${u.lname}</td>
+                        <td>${u.email}</td>
+                        <td>${u.is_admin ? '<span class="badge bg-danger">Admin</span>' : 'User'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="alert('Edit user ${u.id}')">Edit</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            listContainer.innerHTML = html;
+
+        } catch (error) {
+            listContainer.innerHTML = `<div class="alert alert-danger">Error loading users: ${error.message}</div>`;
+        }
+    }
+};
+
+// --- Auth UI Handler ---
+const AuthUI = {
+    init() {
+        // Login Form
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                const errorDiv = document.getElementById('loginError');
+
+                try {
+                    const response = await ApiService.login(email, password);
+                    AppState.setToken(response.token);
+                    AppState.user = response.user;
+
+                    // Close modal
+                    const modalEl = document.getElementById('authModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+
+                    // Update UI and redirect
+                    this.update();
+                    ViewManager.showDashboard();
+                } catch (err) {
+                    if (errorDiv) {
+                        errorDiv.textContent = err.message;
+                        errorDiv.classList.remove('d-none');
+                    }
+                }
+            });
+        }
+
+        // Signup Form
+        const signupForm = document.getElementById('signupForm');
+        if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                // Quick hack for names since the simple form only has email/pass
+                // ideally we'd add name fields to the form
+                const fname = "New";
+                const lname = "User";
+
+                const errorDiv = document.getElementById('signupError');
+                const successDiv = document.getElementById('signupSuccess');
+
+                try {
+                    await ApiService.register(fname, lname, email, password);
+                    if (successDiv) successDiv.classList.remove('d-none');
+                    if (errorDiv) errorDiv.classList.add('d-none');
+                    signupForm.reset();
+                } catch (err) {
+                    if (errorDiv) {
+                        errorDiv.textContent = err.message;
+                        errorDiv.classList.remove('d-none');
+                    }
+                }
+            });
+        }
+
+        this.update();
+    },
+
+    update() {
+        const nav = document.querySelector('#mainNav .navbar-nav');
+        if (!nav) return;
+
+        // Remove existing dynamic items
+        const existingBadge = document.getElementById('authBadge');
+        if (existingBadge) existingBadge.remove();
+
+        const existingLogout = document.getElementById('logoutNav');
+        if (existingLogout) existingLogout.remove();
+
+        const existingDash = document.getElementById('dashNav');
+        if (existingDash) existingDash.remove();
+
+        const existingAdmin = document.getElementById('adminNav');
+        if (existingAdmin) existingAdmin.remove();
+
+
+        if (AppState.isAuthenticated()) {
+            // Add Dashboard Link
+            const dashLi = document.createElement('li');
+            dashLi.className = 'nav-item';
+            dashLi.id = 'dashNav';
+            dashLi.innerHTML = '<a class="nav-link" href="#" onclick="ViewManager.showDashboard(); return false;">Dashboard</a>';
+            nav.appendChild(dashLi);
+
+            // Add Admin Link (if admin) - we might need to check user object if loaded
+            // For now, always show if there's a token, verify click later or relies on AppState.user
+            if (AppState.user && AppState.user.is_admin) {
+                const adminLi = document.createElement('li');
+                adminLi.className = 'nav-item';
+                adminLi.id = 'adminNav';
+                adminLi.innerHTML = '<a class="nav-link" href="#" onclick="ViewManager.showAdmin(); return false;">Admin</a>';
+                nav.appendChild(adminLi);
+            }
+
+            // Add Logout
+            const logoutLi = document.createElement('li');
+            logoutLi.className = 'nav-item';
+            logoutLi.id = 'logoutNav';
+            logoutLi.innerHTML = '<a class="nav-link" href="#" onclick="AppState.logout(); return false;">Logout</a>';
+            nav.appendChild(logoutLi);
+
+            // Hide Login Modal Trigger link (the last fixed one)
+            // It's a bit tricky to find by selector without ID, assuming it's the one with data-bs-target="#authModal"
+            const loginTrigger = document.querySelector('[data-bs-target="#authModal"]');
+            if (loginTrigger && loginTrigger.parentElement) {
+                loginTrigger.parentElement.classList.add('d-none');
+            }
+
+        } else {
+            // Show Login Modal Trigger link
+            const loginTrigger = document.querySelector('[data-bs-target="#authModal"]');
+            if (loginTrigger && loginTrigger.parentElement) {
+                loginTrigger.parentElement.classList.remove('d-none');
+            }
+        }
+    }
+};
+
+// --- Initialization ---
+window.addEventListener('DOMContentLoaded', event => {
+    // 1. Navbar Logic (Original)
+    var navbarShrink = function () {
+        const navbarCollapsible = document.body.querySelector('#mainNav');
+        if (!navbarCollapsible) return;
         if (window.scrollY === 0) {
             navbarCollapsible.classList.remove('navbar-shrink')
         } else {
             navbarCollapsible.classList.add('navbar-shrink')
         }
-
     };
-
-    // Shrink the navbar 
     navbarShrink();
-
-    // Shrink the navbar when page is scrolled
     document.addEventListener('scroll', navbarShrink);
 
-    // Activate Bootstrap scrollspy on the main nav element
-    const mainNav = document.body.querySelector('#mainNav');
-    if (mainNav) {
-        new bootstrap.ScrollSpy(document.body, {
-            target: '#mainNav',
-            rootMargin: '0px 0px -40%',
-        });
-    };
+    // 2. Init Auth
+    AuthUI.init();
 
-    // Collapse responsive navbar when toggler is visible
-    const navbarToggler = document.body.querySelector('.navbar-toggler');
-    const responsiveNavItems = [].slice.call(
-        document.querySelectorAll('#navbarResponsive .nav-link')
-    );
-    responsiveNavItems.map(function (responsiveNavItem) {
-        responsiveNavItem.addEventListener('click', () => {
-            if (window.getComputedStyle(navbarToggler).display !== 'none') {
-                navbarToggler.click();
-            }
+    // 3. Init View
+    // Check if we have a token, if so try to get user and stay on dashboard
+    if (AppState.isAuthenticated()) {
+        ApiService.getMe().then(user => {
+            AppState.user = user;
+            AuthUI.update(); // Update nav with admin/dash links
+            ViewManager.showDashboard();
+        }).catch(err => {
+            // Token likely invalid
+            AppState.logout();
         });
-    });
-
+    } else {
+        ViewManager.showLanding();
+    }
 });
 
-// Weather, Subscription, and Simple Email Auth logic
+// Original Weather & Subscription Logic (Preserved but adapted)
 (function () {
     const weatherForm = document.getElementById('weatherForm');
     const cityInput = document.getElementById('cityInput');
@@ -66,7 +389,6 @@ window.addEventListener('DOMContentLoaded', event => {
     const weatherError = document.getElementById('weatherError');
 
     async function fetchWeather(city, units) {
-        // Uses Open-Meteo (no key) via geocoding + forecast
         const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`;
         const geoRes = await fetch(geocodeUrl);
         if (!geoRes.ok) throw new Error('Failed to geocode city');
@@ -85,7 +407,6 @@ window.addEventListener('DOMContentLoaded', event => {
     }
 
     function weatherCodeToText(code) {
-        // Minimal mapping for display
         const map = {
             0: 'Clear', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
             45: 'Fog', 48: 'Depositing Rime Fog',
@@ -122,8 +443,8 @@ window.addEventListener('DOMContentLoaded', event => {
         }
     }
 
-    weatherForm && weatherForm.addEventListener('submit', handleWeatherSubmit);
-    // Quick city buttons
+    if (weatherForm) weatherForm.addEventListener('submit', handleWeatherSubmit);
+
     document.querySelectorAll('.quick-city').forEach(btn => {
         btn.addEventListener('click', function () {
             if (!cityInput) return;
@@ -131,224 +452,9 @@ window.addEventListener('DOMContentLoaded', event => {
             weatherForm && weatherForm.dispatchEvent(new Event('submit'));
         });
     });
-
-    // Subscription form handler (local-only feedback)
-    const contactForm = document.getElementById('contactForm');
-    const emailInput = document.getElementById('emailAddress');
-    const submitButton = document.getElementById('submitButton');
-    const submitSuccessMessage = document.getElementById('submitSuccessMessage');
-    const submitErrorMessage = document.getElementById('submitErrorMessage');
-
-    if (submitButton) submitButton.classList.remove('disabled');
-
-    contactForm && contactForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const email = emailInput && emailInput.value.trim();
-        if (!email) {
-            submitErrorMessage && (submitErrorMessage.classList.remove('d-none'));
-            return;
-        }
-        try {
-            const list = JSON.parse(localStorage.getItem('subscriptions') || '[]');
-            if (!list.includes(email)) list.push(email);
-            localStorage.setItem('subscriptions', JSON.stringify(list));
-            submitErrorMessage && submitErrorMessage.classList.add('d-none');
-            submitSuccessMessage && submitSuccessMessage.classList.remove('d-none');
-        } catch (_) {
-            submitErrorMessage && submitErrorMessage.classList.remove('d-none');
-        }
-    });
-
-    // Simple email login/signup with localStorage
-    const loginForm = document.getElementById('loginForm');
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    const loginError = document.getElementById('loginError');
-
-    const signupForm = document.getElementById('signupForm');
-    const signupEmail = document.getElementById('signupEmail');
-    const signupPassword = document.getElementById('signupPassword');
-    const signupError = document.getElementById('signupError');
-    const signupSuccess = document.getElementById('signupSuccess');
-
-    function readUsers() {
-        try {
-            return JSON.parse(localStorage.getItem('users') || '{}');
-        } catch (_) {
-            return {};
-        }
-    }
-
-    function writeUsers(users) {
-        localStorage.setItem('users', JSON.stringify(users));
-    }
-
-    function setSession(email) {
-        localStorage.setItem('sessionEmail', email);
-    }
-
-    function getSession() {
-        return localStorage.getItem('sessionEmail');
-    }
-
-    function clearSession() {
-        localStorage.removeItem('sessionEmail');
-    }
-
-    function validateEmail(email) {
-        return /.+@.+\..+/.test(email);
-    }
-
-    signupForm && signupForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        signupError && signupError.classList.add('d-none');
-        signupSuccess && signupSuccess.classList.add('d-none');
-        const email = signupEmail && signupEmail.value.trim();
-        const password = signupPassword && signupPassword.value;
-        if (!validateEmail(email) || !password || password.length < 6) {
-            signupError && (signupError.textContent = 'Invalid email or password too short.');
-            signupError && signupError.classList.remove('d-none');
-            return;
-        }
-        const users = readUsers();
-        if (users[email]) {
-            signupError && (signupError.textContent = 'Email already registered.');
-            signupError && signupError.classList.remove('d-none');
-            return;
-        }
-        users[email] = { email: email, password: password };
-        writeUsers(users);
-        signupSuccess && signupSuccess.classList.remove('d-none');
-    });
-
-    loginForm && loginForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        loginError && loginError.classList.add('d-none');
-        const email = loginEmail && loginEmail.value.trim();
-        const password = loginPassword && loginPassword.value;
-        const users = readUsers();
-        if (!users[email] || users[email].password !== password) {
-            loginError && (loginError.textContent = 'Invalid credentials.');
-            loginError && loginError.classList.remove('d-none');
-            return;
-        }
-        setSession(email);
-        const modalEl = document.getElementById('authModal');
-        if (modalEl) {
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.hide();
-        }
-        updateAuthUI();
-    });
-
-    // Auth UI indicator in navbar
-    function updateAuthUI() {
-        const email = getSession();
-        let nav = document.querySelector('#mainNav .navbar-nav');
-        if (!nav) return;
-        let badge = document.getElementById('authBadge');
-        if (!badge) {
-            badge = document.createElement('li');
-            badge.className = 'nav-item';
-            badge.innerHTML = '<span class="nav-link" id="authBadge"></span>';
-            nav.appendChild(badge);
-            badge = document.getElementById('authBadge');
-        }
-        let logoutLi = document.getElementById('logoutNav');
-        if (!logoutLi) {
-            logoutLi = document.createElement('li');
-            logoutLi.className = 'nav-item';
-            logoutLi.id = 'logoutNav';
-            logoutLi.innerHTML = '<a class="nav-link" href="#">Logout</a>';
-            nav.appendChild(logoutLi);
-            logoutLi.addEventListener('click', function (e) {
-                e.preventDefault();
-                clearSession();
-                updateAuthUI();
-            });
-        }
-        if (email) {
-            badge.textContent = email;
-            logoutLi.classList.remove('d-none');
-        } else {
-            badge.textContent = '';
-            logoutLi.classList.add('d-none');
-        }
-    }
-
-    updateAuthUI();
 })();
 
-// Subscription buttons: require login, then redirect to placeholder payment URL
-(function () {
-    function getSession() {
-        return localStorage.getItem('sessionEmail');
-    }
-    function openLoginModal() {
-        const modalEl = document.getElementById('authModal');
-        if (modalEl) {
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.show();
-            // switch to login tab
-            const loginTabBtn = document.querySelector('#authTabs button#login-tab');
-            if (loginTabBtn) new bootstrap.Tab(loginTabBtn).show();
-        }
-    }
-    function handleSubscribeClick(e) {
-        e.preventDefault();
-        const plan = this.getAttribute('data-plan');
-        const rawPrice = this.getAttribute('data-price');
-        const currency = this.getAttribute('data-currency') || 'BAM';
-        // format price with comma decimal for BAM
-        const price = (rawPrice || '').replace('.', ',');
-        const email = getSession();
-        if (!email) {
-            openLoginModal();
-            return;
-        }
-        // Open Payment modal instead of redirecting
-        const paymentPlan = document.getElementById('paymentPlan');
-        if (paymentPlan) paymentPlan.value = `${plan.toUpperCase()} plan - ${currency} ${price}/mo`;
-        const modalEl = document.getElementById('paymentModal');
-        if (modalEl) {
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.show();
-        }
-    }
-    document.querySelectorAll('.subscribe-btn').forEach(btn => {
-        btn.addEventListener('click', handleSubscribeClick);
-    });
-})();
-
-// Handle Payment form submit (simulated)
-(function () {
-    const paymentForm = document.getElementById('paymentForm');
-    const payerFullName = document.getElementById('payerFullName');
-    const cardName = document.getElementById('cardName');
-    const paymentError = document.getElementById('paymentError');
-    const paymentSuccess = document.getElementById('paymentSuccess');
-    const paymentModalEl = document.getElementById('paymentModal');
-
-    paymentForm && paymentForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        paymentError && paymentError.classList.add('d-none');
-        paymentSuccess && paymentSuccess.classList.add('d-none');
-        const fullName = payerFullName && payerFullName.value.trim();
-        const nameOnCard = cardName && cardName.value.trim();
-        if (!fullName || !nameOnCard) {
-            if (paymentError) {
-                paymentError.textContent = 'Please enter your full name and card name.';
-                paymentError.classList.remove('d-none');
-            }
-            return;
-        }
-        // Simulate success
-        setTimeout(() => {
-            paymentSuccess && paymentSuccess.classList.remove('d-none');
-            if (paymentModalEl) {
-                const modal = bootstrap.Modal.getOrCreateInstance(paymentModalEl);
-                setTimeout(() => modal.hide(), 1000);
-            }
-        }, 500);
-    });
-})();
+// Expose Helpers globally for onclick events in HTML
+window.AppState = AppState;
+window.ViewManager = ViewManager;
+window.ApiService = ApiService;

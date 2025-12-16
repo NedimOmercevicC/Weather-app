@@ -1,44 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="description" content="" />
-        <meta name="author" content="" />
-        <title>Web Weather</title>
-        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-        <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet" />
-        <link href="css/styles.css" rel="stylesheet" />
-    </head>
-    <body id="page-top">
-        <!-- Navigation-->
-        <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
-            <div class="container px-4 px-lg-5">
-                <a class="navbar-brand" href="#page-top">Weather</a>
-                <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-                    Menu
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarResponsive">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link" href="#weather">Weather</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#pricing">Subscription</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#signup">Contact</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#authModal">Login / Signup</a></li>
-                    </ul>
-                </div>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Web Weather</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+</head>
+
+<body id="page-top">
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="#page-top">Weather</a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+                aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#weather">Weather</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pricing">Subscription</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#signup">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal"
+                            data-bs-target="#authModal">Login / Signup</a></li>
+                </ul>
             </div>
-        </nav>
+        </div>
+    </nav>
+    <div id="landing-page">
         <!-- Masthead-->
         <header class="masthead">
             <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center">
                 <div class="d-flex justify-content-center">
                     <div class="text-center">
                         <h1 class="mx-auto my-0 text-uppercase">Weather</h1>
-                        <h2 class="text-white-50 mx-auto mt-2 mb-5">Accurate, fast, and simple weather for your day.</h2>
+                        <h2 class="text-white-50 mx-auto mt-2 mb-5">Accurate, fast, and simple weather for your day.
+                        </h2>
                         <a class="btn btn-primary" href="#about">Get Started</a>
                     </div>
                 </div>
@@ -51,7 +60,8 @@
                         <h2 class="mb-3">Check the Weather</h2>
                         <form id="weatherForm" class="row g-2">
                             <div class="col-sm-6 col-md-4">
-                                <input class="form-control" id="cityInput" type="text" placeholder="Enter city (e.g., Sarajevo)" aria-label="City" required>
+                                <input class="form-control" id="cityInput" type="text"
+                                    placeholder="Enter city (e.g., Sarajevo)" aria-label="City" required>
                             </div>
                             <div class="col-sm-6 col-md-3">
                                 <select class="form-select" id="unitsSelect" aria-label="Units">
@@ -60,17 +70,23 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-primary w-100" id="weatherSubmit" type="submit">Get Weather</button>
+                                <button class="btn btn-primary w-100" id="weatherSubmit" type="submit">Get
+                                    Weather</button>
                             </div>
                         </form>
                         <div class="mt-3">
                             <div class="small text-muted mb-2">Free quick cities:</div>
                             <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city" data-city="Sarajevo">Sarajevo</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city" data-city="Fojnica">Fojnica</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city" data-city="Rakovica">Rakovica </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city" data-city="Tuzla">Tuzla</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city" data-city="Mostar">Mostar</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city"
+                                    data-city="Sarajevo">Sarajevo</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city"
+                                    data-city="Fojnica">Fojnica</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city"
+                                    data-city="Rakovica">Rakovica </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city"
+                                    data-city="Tuzla">Tuzla</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm quick-city"
+                                    data-city="Mostar">Mostar</button>
                             </div>
                         </div>
                     </div>
@@ -96,16 +112,20 @@
                 </div>
             </div>
         </section>
-        
+
         <section class="about-section text-center" id="about">
             <div class="container px-4 px-lg-5">
                 <div class="row gx-4 gx-lg-5 justify-content-center">
                     <div class="col-lg-8">
                         <h2 class="text-white mb-4">Improving Weather for Everyone</h2>
                         <p class="text-white-50">
-                            Our mission is to make reliable, fast, and clear weather insights available to everyone. 
-                            We are actively improving our system with better data sources, smarter forecasts, and a simple experience.
-                            Upcoming enhancements include hourly and daily trends, severe weather alerts, and personalized location dashboards.
+                            Our mission is to make reliable, fast, and clear weather insights available to everyone.
+                            We are actively improving our system with better data sources, smarter forecasts, and a
+                            simple
+                            experience.
+                            Upcoming enhancements include hourly and daily trends, severe weather alerts, and
+                            personalized
+                            location dashboards.
                         </p>
                     </div>
                 </div>
@@ -146,7 +166,8 @@
                                     <li>Multiple units</li>
                                     <li>Email support</li>
                                 </ul>
-                                <button class="btn btn-primary subscribe-btn" data-plan="basic" data-price="4.99">Subscribe</button>
+                                <button class="btn btn-primary subscribe-btn" data-plan="basic"
+                                    data-price="4.99">Subscribe</button>
                             </div>
                         </div>
                     </div>
@@ -160,7 +181,8 @@
                                     <li>Hourly forecast</li>
                                     <li>Priority support</li>
                                 </ul>
-                                <button class="btn btn-outline-primary subscribe-btn" data-plan="pro" data-price="9.99">Subscribe</button>
+                                <button class="btn btn-outline-primary subscribe-btn" data-plan="pro"
+                                    data-price="9.99">Subscribe</button>
                             </div>
                         </div>
                     </div>
@@ -176,20 +198,28 @@
                         <h2 class="text-white mb-5">Subscribe to receive updates!</h2>
                         <form class="form-signup" id="contactForm" data-sb-form-api-token="API_TOKEN">
                             <div class="row input-group-newsletter">
-                                <div class="col"><input class="form-control" id="emailAddress" type="email" placeholder="Enter email address..." aria-label="Enter email address..." data-sb-validations="required,email" /></div>
-                                <div class="col-auto"><button class="btn btn-primary disabled" id="submitButton" type="submit">Notify Me!</button></div>
+                                <div class="col"><input class="form-control" id="emailAddress" type="email"
+                                        placeholder="Enter email address..." aria-label="Enter email address..."
+                                        data-sb-validations="required,email" /></div>
+                                <div class="col-auto"><button class="btn btn-primary disabled" id="submitButton"
+                                        type="submit">Notify Me!</button></div>
                             </div>
-                            <div class="invalid-feedback mt-2" data-sb-feedback="emailAddress:required">An email is required.</div>
-                            <div class="invalid-feedback mt-2" data-sb-feedback="emailAddress:email">Email is not valid.</div>
+                            <div class="invalid-feedback mt-2" data-sb-feedback="emailAddress:required">An email is
+                                required.</div>
+                            <div class="invalid-feedback mt-2" data-sb-feedback="emailAddress:email">Email is not valid.
+                            </div>
                             <div class="d-none" id="submitSuccessMessage">
                                 <div class="text-center mb-3 mt-2 text-white">
                                     <div class="fw-bolder">Form submission successful!</div>
                                     To activate this form, sign up at
                                     <br />
-                                    <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
+                                    <a
+                                        href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
                                 </div>
                             </div>
-                            <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3 mt-2">Error sending message!</div></div>
+                            <div class="d-none" id="submitErrorMessage">
+                                <div class="text-center text-danger mb-3 mt-2">Error sending message!</div>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -215,7 +245,9 @@
                                 <i class="fas fa-envelope text-primary mb-2"></i>
                                 <h4 class="text-uppercase m-0">Email</h4>
                                 <hr class="my-4 mx-auto" />
-                                <div class="small text-black-50"><a href="mailto:weather@gmail.com">weather@gmail.com</a></div>
+                                <div class="small text-black-50"><a
+                                        href="mailto:weather@gmail.com">weather@gmail.com</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -237,84 +269,296 @@
                 </div>
             </div>
         </section>
-        <!-- Footer-->
-        <footer class="footer bg-black small text-center text-white-50"><div class="container px-4 px-lg-5">Copyright &copy; Your Website 2023</div></footer>
-        
-        <!-- Auth Modal -->
-        <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="authModalLabel">Login or Signup</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <ul class="nav nav-tabs" id="authTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">Login</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signupTab" type="button" role="tab" aria-controls="signupTab" aria-selected="false">Signup</button>
-                            </li>
-                        </ul>
-                        <div class="tab-content pt-3" id="authTabsContent">
-                            <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
-                                <form id="loginForm" class="vstack gap-3">
-                                    <input class="form-control" id="loginEmail" type="email" placeholder="Email" required>
-                                    <input class="form-control" id="loginPassword" type="password" placeholder="Password" required>
-                                    <button class="btn btn-primary" type="submit">Login</button>
-                                    <div class="text-danger small d-none" id="loginError"></div>
-                                </form>
+    </div>
+
+    <!-- Dashboard Section (Hidden by default) -->
+    <div id="dashboard-page" class="d-none">
+
+        <section class="masthead bg-primary text-white text-center" style="padding-top: 100px; padding-bottom: 50px;">
+            <div class="container px-4 px-lg-5">
+                <h1 class="mb-4">My Dashboard</h1>
+                <p class="text-white-50">Welcome to your personalized weather dashboard</p>
+            </div>
+        </section>
+
+        <section class="page-section" id="dashboard-content">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5">
+                    <div class="col-md-12">
+                        <div id="dashboardError" class="alert alert-danger d-none" role="alert"></div>
+                        <div id="dashboardLoading" class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
-                            <div class="tab-pane fade" id="signupTab" role="tabpanel" aria-labelledby="signup-tab">
-                                <form id="signupForm" class="vstack gap-3">
-                                    <input class="form-control" id="signupEmail" type="email" placeholder="Email" required>
-                                    <input class="form-control" id="signupPassword" type="password" placeholder="Password (min 6 chars)" minlength="6" required>
-                                    <button class="btn btn-success" type="submit">Create Account</button>
-                                    <div class="text-danger small d-none" id="signupError"></div>
-                                    <div class="text-success small d-none" id="signupSuccess">Account created. You can log in now.</div>
-                                </form>
+                        </div>
+
+                        <div id="dashboardContent" class="d-none">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="mb-0">My Profile</h5>
+                                        </div>
+                                        <div class="card-body" id="userProfile">
+                                            <!-- User profile info will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header bg-success text-white">
+                                            <h5 class="mb-0">Active Subscription</h5>
+                                        </div>
+                                        <div class="card-body" id="activeSubscription">
+                                            <!-- Active subscription will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header bg-info text-white">
+                                            <h5 class="mb-0">My Saved Filters</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="savedFiltersList">
+                                                <!-- Saved filters will be loaded here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h5 class="mb-0">Payment History</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="paymentHistory">
+                                                <!-- Payment history will be loaded here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="paymentModalLabel">Complete Subscription (BAM)</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </section>
+    </div>
+
+    <!-- Admin Section (Hidden by default) -->
+    <div id="admin-page" class="d-none">
+
+        <section class="masthead bg-danger text-white text-center" style="padding-top: 100px; padding-bottom: 50px;">
+            <div class="container px-4 px-lg-5">
+                <h1 class="mb-4">Admin Panel</h1>
+                <p class="text-white-50">Manage all entities and users</p>
+            </div>
+        </section>
+
+        <section class="page-section" id="admin-content">
+            <div class="container px-4 px-lg-5">
+                <div id="adminError" class="alert alert-danger d-none" role="alert"></div>
+                <div id="adminLoading" class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
-                    <div class="modal-body">
-                        <form id="paymentForm" class="vstack gap-3">
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label for="payerFullName" class="form-label">Full Name</label>
-                                    <input class="form-control" id="payerFullName" type="text" placeholder="Your full name" required>
+                </div>
+
+                <div id="adminContent" class="d-none">
+                    <!-- Tabs for different admin sections -->
+                    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users"
+                                type="button" role="tab">Users</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="cities-tab" data-bs-toggle="tab" data-bs-target="#cities"
+                                type="button" role="tab">Cities</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="subscriptions-tab" data-bs-toggle="tab"
+                                data-bs-target="#subscriptions" type="button" role="tab">Subscriptions</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments"
+                                type="button" role="tab">Payments</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="filters-tab" data-bs-toggle="tab" data-bs-target="#filters"
+                                type="button" role="tab">Saved Filters</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="adminTabContent">
+                        <!-- Users Tab -->
+                        <div class="tab-pane fade show active" id="users" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">All Users</h5>
                                 </div>
-                                <div class="col-12">
-                                    <label for="cardName" class="form-label">Name on Card</label>
-                                    <input class="form-control" id="cardName" type="text" placeholder="Name on card" required>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Plan</label>
-                                    <input class="form-control" id="paymentPlan" type="text" value="" readonly>
+                                <div class="card-body">
+                                    <div id="usersList">
+                                        <!-- Users list will be loaded here -->
+                                    </div>
                                 </div>
                             </div>
-                            <button class="btn btn-primary" type="submit">Pay Now (BAM)</button>
-                            <div class="text-danger small d-none" id="paymentError"></div>
-                            <div class="text-success small d-none" id="paymentSuccess">Payment successful. Welcome!</div>
-                        </form>
+                        </div>
+
+                        <!-- Cities Tab -->
+                        <div class="tab-pane fade" id="cities" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">All Cities</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="citiesList">
+                                        <!-- Cities list will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subscriptions Tab -->
+                        <div class="tab-pane fade" id="subscriptions" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">All Subscriptions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="subscriptionsList">
+                                        <!-- Subscriptions list will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payments Tab -->
+                        <div class="tab-pane fade" id="payments" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">All Payments</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="paymentsList">
+                                        <!-- Payments list will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Saved Filters Tab -->
+                        <div class="tab-pane fade" id="filters" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">All Saved Filters</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="filtersList">
+                                        <!-- Filters list will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Footer-->
+    <footer class="footer bg-black small text-center text-white-50">
+        <div class="container px-4 px-lg-5">Copyright &copy; Your Website 2023</div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="authModalLabel">Login or Signup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="authTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login"
+                                type="button" role="tab" aria-controls="login" aria-selected="true">Login</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signupTab"
+                                type="button" role="tab" aria-controls="signupTab" aria-selected="false">Signup</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content pt-3" id="authTabsContent">
+                        <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+                            <form id="loginForm" class="vstack gap-3">
+                                <input class="form-control" id="loginEmail" type="email" placeholder="Email" required>
+                                <input class="form-control" id="loginPassword" type="password" placeholder="Password"
+                                    required>
+                                <button class="btn btn-primary" type="submit">Login</button>
+                                <div class="text-danger small d-none" id="loginError"></div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="signupTab" role="tabpanel" aria-labelledby="signup-tab">
+                            <form id="signupForm" class="vstack gap-3">
+                                <input class="form-control" id="signupEmail" type="email" placeholder="Email" required>
+                                <input class="form-control" id="signupPassword" type="password"
+                                    placeholder="Password (min 6 chars)" minlength="6" required>
+                                <button class="btn btn-success" type="submit">Create Account</button>
+                                <div class="text-danger small d-none" id="signupError"></div>
+                                <div class="text-success small d-none" id="signupSuccess">Account created. You can log
+                                    in now.</div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="js/scripts.js"></script>
-        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
-    </body>
+    </div>
+
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">Complete Subscription (BAM)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="paymentForm" class="vstack gap-3">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="payerFullName" class="form-label">Full Name</label>
+                                <input class="form-control" id="payerFullName" type="text" placeholder="Your full name"
+                                    required>
+                            </div>
+                            <div class="col-12">
+                                <label for="cardName" class="form-label">Name on Card</label>
+                                <input class="form-control" id="cardName" type="text" placeholder="Name on card"
+                                    required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Plan</label>
+                                <input class="form-control" id="paymentPlan" type="text" value="" readonly>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Pay Now (BAM)</button>
+                        <div class="text-danger small d-none" id="paymentError"></div>
+                        <div class="text-success small d-none" id="paymentSuccess">Payment successful. Welcome!</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/scripts.js"></script>
+    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+</body>
+
 </html>
 <p>New branch</p>

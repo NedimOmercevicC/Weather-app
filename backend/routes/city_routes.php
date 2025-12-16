@@ -1,6 +1,7 @@
 <?php
 $cityService = new CityService();
 
+// Public routes - anyone can view cities
 Flight::route('GET /api/cities', function() use ($cityService) {
     try {
         $cities = $cityService->getAllCities();
@@ -10,25 +11,6 @@ Flight::route('GET /api/cities', function() use ($cityService) {
     }
 });
 
-Flight::route('POST /api/cities', function() use ($cityService) {
-    try {
-        $data = json_decode(Flight::request()->getBody(), true);
-        
-        if (empty($data)) {
-            sendJsonResponse(['error' => true, 'message' => 'Request body is empty'], 400);
-            return;
-        }
-        
-        $result = $cityService->createCity($data);
-        sendJsonResponse(['message' => 'City created successfully', 'data' => $result], 201);
-    } catch (ValidationException $e) {
-        sendJsonResponse(['error' => true, 'message' => $e->getMessage()], 400);
-    } catch (Exception $e) {
-        handleError($e);
-    }
-});
-
-// Search route MUST come before {id} route to avoid conflicts
 Flight::route('GET /api/cities/search/@term', function($term) use ($cityService) {
     try {
         if (empty($term)) {
@@ -57,8 +39,31 @@ Flight::route('GET /api/cities/@id', function($id) use ($cityService) {
     }
 });
 
+// Admin-only routes - require admin role
+Flight::route('POST /api/cities', function() use ($cityService) {
+    try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
+        $data = json_decode(Flight::request()->getBody(), true);
+        
+        if (empty($data)) {
+            sendJsonResponse(['error' => true, 'message' => 'Request body is empty'], 400);
+            return;
+        }
+        
+        $result = $cityService->createCity($data);
+        sendJsonResponse(['message' => 'City created successfully', 'data' => $result], 201);
+    } catch (ValidationException $e) {
+        sendJsonResponse(['error' => true, 'message' => $e->getMessage()], 400);
+    } catch (Exception $e) {
+        handleError($e);
+    }
+});
+
 Flight::route('PUT /api/cities/@id', function($id) use ($cityService) {
     try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
         $data = json_decode(Flight::request()->getBody(), true);
         
         if (empty($data)) {
@@ -79,6 +84,8 @@ Flight::route('PUT /api/cities/@id', function($id) use ($cityService) {
 
 Flight::route('DELETE /api/cities/@id', function($id) use ($cityService) {
     try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
         $result = $cityService->deleteCity($id);
         sendJsonResponse(['message' => 'City deleted successfully']);
     } catch (NotFoundException $e) {

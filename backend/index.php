@@ -29,12 +29,25 @@ if (!class_exists('NotFoundException')) {
 }
 
 try {
+    require_once __DIR__ . '/config.php';
+    require_once __DIR__ . '/Database.php';
+    
+    // Load middleware
+    require_once __DIR__ . '/middleware/AuthMiddleware.php';
+    require_once __DIR__ . '/middleware/AdminMiddleware.php';
+    require_once __DIR__ . '/middleware/ValidationMiddleware.php';
+    require_once __DIR__ . '/middleware/LoggingMiddleware.php';
+    
+    
+    // Load services
     require_once __DIR__ . '/services/UserService.php';
     require_once __DIR__ . '/services/CityService.php';
     require_once __DIR__ . '/services/SubscriptionService.php';
     require_once __DIR__ . '/services/PaymentService.php';
     require_once __DIR__ . '/services/SavedFilterService.php';
+    require_once __DIR__ . '/services/AuthService.php';
 
+    // Load routes
     require_once __DIR__ . '/routes/user_routes.php';
     require_once __DIR__ . '/routes/city_routes.php';
     require_once __DIR__ . '/routes/subscription_routes.php';
@@ -91,6 +104,24 @@ Flight::map('notFound', function() {
         'error' => true,
         'message' => 'Endpoint not found'
     ], 404);
+});
+
+// Global request hooks
+Flight::before('route', function(&$params, &$route) {
+    // Basic request logging
+    LoggingMiddleware::logRequest();
+
+    // If JSON body present, try to set decoded body in Flight for convenience
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '';
+    if (stripos($contentType, 'application/json') !== false) {
+        $raw = file_get_contents('php://input');
+        if ($raw) {
+            $decoded = json_decode($raw, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                Flight::set('json_body', $decoded);
+            }
+        }
+    }
 });
 
 Flight::route('GET /', function() {

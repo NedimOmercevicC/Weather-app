@@ -1,8 +1,11 @@
 <?php
 $subscriptionService = new SubscriptionService();
 
+// Admin-only routes
 Flight::route('GET /api/subscriptions', function() use ($subscriptionService) {
     try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
         $subscriptions = $subscriptionService->getAllSubscriptions();
         sendJsonResponse(['data' => $subscriptions]);
     } catch (Exception $e) {
@@ -10,13 +13,21 @@ Flight::route('GET /api/subscriptions', function() use ($subscriptionService) {
     }
 });
 
+// Authenticated users can create their own subscriptions
 Flight::route('POST /api/subscriptions', function() use ($subscriptionService) {
     try {
+        AuthMiddleware::authenticate();
+        $userId = AuthMiddleware::getUserId();
         $data = json_decode(Flight::request()->getBody(), true);
         
         if (empty($data)) {
             sendJsonResponse(['error' => true, 'message' => 'Request body is empty'], 400);
             return;
+        }
+        
+        // Non-admins can only create subscriptions for themselves
+        if (!AuthMiddleware::isAdmin() && (!isset($data['user_id']) || $data['user_id'] != $userId)) {
+            $data['user_id'] = $userId;
         }
         
         $result = $subscriptionService->createSubscription($data);
@@ -30,9 +41,17 @@ Flight::route('POST /api/subscriptions', function() use ($subscriptionService) {
     }
 });
 
-// User-specific routes MUST come before generic {id} routes
+// User-specific routes - users can see their own, admins can see any
 Flight::route('GET /api/subscriptions/user/@userId/active', function($userId) use ($subscriptionService) {
     try {
+        AuthMiddleware::authenticate();
+        $currentUserId = AuthMiddleware::getUserId();
+        $isAdmin = AuthMiddleware::isAdmin();
+        
+        if (!$isAdmin && $currentUserId != $userId) {
+            Flight::halt(403, json_encode(['error' => true, 'message' => 'Access denied']));
+        }
+        
         if (!is_numeric($userId) || $userId <= 0) {
             sendJsonResponse(['error' => true, 'message' => 'Invalid user ID'], 400);
             return;
@@ -52,6 +71,14 @@ Flight::route('GET /api/subscriptions/user/@userId/active', function($userId) us
 
 Flight::route('GET /api/subscriptions/user/@userId', function($userId) use ($subscriptionService) {
     try {
+        AuthMiddleware::authenticate();
+        $currentUserId = AuthMiddleware::getUserId();
+        $isAdmin = AuthMiddleware::isAdmin();
+        
+        if (!$isAdmin && $currentUserId != $userId) {
+            Flight::halt(403, json_encode(['error' => true, 'message' => 'Access denied']));
+        }
+        
         if (!is_numeric($userId) || $userId <= 0) {
             sendJsonResponse(['error' => true, 'message' => 'Invalid user ID'], 400);
             return;
@@ -67,7 +94,16 @@ Flight::route('GET /api/subscriptions/user/@userId', function($userId) use ($sub
 
 Flight::route('GET /api/subscriptions/@id', function($id) use ($subscriptionService) {
     try {
+        AuthMiddleware::authenticate();
         $subscription = $subscriptionService->getSubscriptionById($id);
+        $currentUserId = AuthMiddleware::getUserId();
+        $isAdmin = AuthMiddleware::isAdmin();
+        
+        // Users can only see their own subscriptions, admins can see any
+        if (!$isAdmin && $subscription['user_id'] != $currentUserId) {
+            Flight::halt(403, json_encode(['error' => true, 'message' => 'Access denied']));
+        }
+        
         sendJsonResponse(['data' => $subscription]);
     } catch (NotFoundException $e) {
         sendJsonResponse(['error' => true, 'message' => $e->getMessage()], 404);
@@ -78,8 +114,11 @@ Flight::route('GET /api/subscriptions/@id', function($id) use ($subscriptionServ
     }
 });
 
+// Admin-only routes
 Flight::route('PUT /api/subscriptions/@id', function($id) use ($subscriptionService) {
     try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
         $data = json_decode(Flight::request()->getBody(), true);
         
         if (empty($data)) {
@@ -100,6 +139,8 @@ Flight::route('PUT /api/subscriptions/@id', function($id) use ($subscriptionServ
 
 Flight::route('DELETE /api/subscriptions/@id', function($id) use ($subscriptionService) {
     try {
+        AuthMiddleware::authenticate();
+        AdminMiddleware::requireAdmin();
         $result = $subscriptionService->deleteSubscription($id);
         sendJsonResponse(['message' => 'Subscription deleted successfully']);
     } catch (NotFoundException $e) {
